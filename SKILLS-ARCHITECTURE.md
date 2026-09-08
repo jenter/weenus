@@ -40,11 +40,18 @@ Git is the source of truth. Two delivery paths off it.
 ```
 weenus/
   hotdog/SKILL.md          # test skill
+  weenus/SKILL.md          # meta-skill: manages this repo's skills
   <skill-name>/SKILL.md    # one directory per skill
+  new-skill.sh             # scaffold a new skill directory
   install.sh               # symlink skills into ~/.claude/skills/
+  .gitignore               # excludes generated *.zip upload artifacts
   .github/workflows/       # package_skill.py validation + release zips
   SKILLS-ARCHITECTURE.md   # this file
 ```
+
+See `weenus/SKILL.md` for the day-to-day workflow — creating a new skill,
+checking frontmatter, listing what's here — as a companion to this doc's
+design rationale.
 
 **Claude Code (both machines):** `install.sh` symlinks each skill directory
 into `~/.claude/skills/<name>`. Claude Code follows symlinks and reads
