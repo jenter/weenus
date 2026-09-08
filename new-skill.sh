@@ -10,6 +10,9 @@ if [ -z "$1" ]; then
 fi
 
 NAME="$1"
+# Title-case the first letter for the H1 heading. Done with awk rather than
+# bash's ${NAME^} because macOS ships bash 3.2, which lacks that operator.
+TITLE="$(printf '%s' "$NAME" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$REPO_DIR/$NAME"
 
@@ -28,7 +31,7 @@ description: TODO — describe exactly when this skill should fire, in the
   loaded before invocation, so be concrete.
 ---
 
-# ${NAME^}
+# ${TITLE}
 
 TODO — procedural instructions for what Claude should do once this skill
 fires. Keep it action-oriented; put reference data in a separate file

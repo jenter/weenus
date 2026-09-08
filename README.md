@@ -1,5 +1,7 @@
 # weenus
 
+![Pixel-art French bulldog](assets/frenchie.gif)
+
 Personal library of Claude Skills, shared across two accounts (personal +
 work) and their surfaces — Claude Code on both machines, the Claude app on
 web/desktop/iOS. Git is the source of truth; see
