@@ -71,6 +71,56 @@ being ignored. Staying inside these six means one file works in both places
 unchanged. Skills needing Claude Code-only features get a second variant,
 not a degraded shared one.
 
+## Runbook: rolling out a skill update
+
+Do this any time a skill's files change, on whichever machine you edited from
+first.
+
+### Claude Code — personal + work
+
+1. Edit the skill, then `git add`, `commit`, `push` from whichever machine
+   made the change.
+2. On the **other** machine: `cd weenus && git pull`.
+3. Symlinks point at file contents already in the repo, so a `git pull`
+   alone is enough for edits to existing files. Only re-run `install.sh`
+   when a **new** skill directory was added, or a symlink is missing/broken:
+   ```bash
+   ./install.sh   # idempotent, safe to re-run anytime
+   ```
+4. Start a **new** Claude Code session — skills load at session start, so an
+   already-open session won't see the change — and test.
+
+### Claude app — personal + work accounts
+
+Skills do not sync from git into the app. Each account's upload is a
+separate manual step, and there is no re-run of a script for this half.
+
+1. `cd weenus && zip -r hotdog.zip hotdog` (repeat per skill; always rerun
+   after an edit — the zip is a snapshot, not a link).
+2. Log into claude.ai (or the desktop app) under the **relevant account**.
+3. Settings > Customize (or Capabilities) > Skills > find the existing
+   skill entry > replace/re-upload with the new zip (delete + re-add if
+   there's no in-place replace on that surface).
+4. If the same edit should also apply to the **other** account, repeat
+   steps 2-3 there — uploads are per-account, not shared.
+5. Mobile (iPhone, both personal and work) inherits automatically once the
+   matching account's upload is updated — no separate device step.
+
+### Work-machine specifics
+
+- **Claude Code:** the work machine needs the same git access as personal —
+  clone/pull with credentials (SSH key or HTTPS auth) that can read
+  `jenter/weenus`, since it's a private repo.
+- **Claude app:** if Settings > Skills is greyed out on the work account,
+  that's Open Item 1 below — an Org Owner must enable *Code execution and
+  file creation* + *Skills* under Organization settings before you can
+  upload anything there.
+- **Content boundary:** don't put company-sensitive skill content in this
+  repo — see Open Item 3 below. Generic engineering skills (like `hotdog`)
+  are fine; anything with client specifics, internal endpoints, or process
+  detail belongs in company git instead, reachable only from work Claude
+  Code.
+
 ## Open items
 
 1. **Work account may not permit personal skills.** On Enterprise, an Owner
