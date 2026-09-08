@@ -43,9 +43,11 @@ weenus/
   weenus/SKILL.md          # meta-skill: manages this repo's skills
   <skill-name>/SKILL.md    # one directory per skill
   new-skill.sh             # scaffold a new skill directory
-  install.sh               # symlink skills into ~/.claude/skills/
+  install.sh               # symlink skills into ~/.claude/skills/,
+                            # enable the pre-commit validation hook
+  validate-skill.py        # enforces the frontmatter constraint below
+  .githooks/pre-commit     # runs validate-skill.py on commit
   .gitignore               # excludes generated *.zip upload artifacts
-  .github/workflows/       # package_skill.py validation + release zips
   SKILLS-ARCHITECTURE.md   # this file
 ```
 
@@ -67,8 +69,10 @@ persist across sessions. Re-run after any change on claude.ai.
 
 ## Frontmatter constraint
 
-Author to the six fields accepted by claude.ai upload, the Skills API, and
-`package_skill.py`:
+Author to the six fields accepted by claude.ai upload and the Skills API
+(Claude Code itself accepts a much broader set — `when_to_use`,
+`argument-hint`, `model`, `context`, and more — but those fail the
+narrower upload path):
 
 `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
 
@@ -76,7 +80,17 @@ Any other field (`argument-hint`, `context: fork`,
 `disable-model-invocation`) fails packaging with a hard error rather than
 being ignored. Staying inside these six means one file works in both places
 unchanged. Skills needing Claude Code-only features get a second variant,
-not a degraded shared one.
+not a degraded shared one. Two more limits worth knowing: `compatibility`
+caps at 500 characters, and `name` + `description` combined caps at 1536
+(claude.ai truncates listings past that).
+
+There is no official `package_skill.py` — that was this doc's earlier,
+unverified assumption. Claude Code's own validator,
+`claude plugin validate <dir>`, checks a *plugin* manifest
+(`.claude-plugin/plugin.json`) and doesn't apply to a bare skill directory
+like the ones here. This repo enforces the constraint itself instead:
+`validate-skill.py`, run automatically as a pre-commit hook (enabled by
+`install.sh`) — see `weenus/SKILL.md`'s "Validating a skill" section.
 
 ## Runbook: rolling out a skill update
 

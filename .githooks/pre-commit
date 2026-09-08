@@ -1,0 +1,29 @@
+#!/bin/bash
+# Blocks a commit that touches a SKILL.md failing validate-skill.py.
+# Enabled by install.sh via `git config core.hooksPath .githooks`.
+set -e
+
+REPO_DIR="$(git rev-parse --show-toplevel)"
+cd "$REPO_DIR"
+
+# Only the skill directories touched by this commit, not the whole repo —
+# keeps the hook fast and keeps pre-existing failures elsewhere from
+# blocking an unrelated commit.
+# (No `mapfile` here — macOS ships bash 3.2, which lacks it; xargs stays
+# portable across the same bash-3.2/4+ split new-skill.sh works around.)
+dirs="$(git diff --cached --name-only --diff-filter=ACM \
+  | grep -E '(^|/)SKILL\.md$' \
+  | xargs -n1 dirname 2>/dev/null \
+  | sort -u)"
+
+if [ -z "$dirs" ]; then
+  exit 0
+fi
+
+if ! echo "$dirs" | xargs python3 validate-skill.py; then
+  echo ""
+  echo "pre-commit: SKILL.md validation failed — fix the above or run"
+  echo "  git commit --no-verify"
+  echo "to bypass (not recommended)."
+  exit 1
+fi

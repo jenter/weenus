@@ -39,4 +39,11 @@ alongside this one if needed, and point to it from here.
 EOF
 
 echo "✓ Created $SKILL_DIR/SKILL.md"
+
+# The scaffold's description is a TODO placeholder, so this always fails
+# right after creation — that's expected. It's here so the failure output
+# is visible immediately as a template for what to fix, rather than only
+# surfacing at commit time.
+python3 "$REPO_DIR/validate-skill.py" "$SKILL_DIR" || true
+
 echo "  Next: edit the description and body, then run ./install.sh"

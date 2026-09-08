@@ -28,3 +28,8 @@ for skill_path in "$SKILLS_DIR"/*/SKILL.md; do
 done
 
 echo "Skills installed to $CLAUDE_SKILLS_DIR"
+
+# Enforce SKILL.md validation at commit time on every machine this repo is
+# cloned to — see .githooks/pre-commit and validate-skill.py.
+git -C "$SKILLS_DIR" config core.hooksPath .githooks
+echo "✓ Enabled pre-commit SKILL.md validation (.githooks/pre-commit)"
