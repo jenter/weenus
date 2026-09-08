@@ -1,0 +1,123 @@
+# Skills Architecture — cross-surface distribution
+
+Repo: https://github.com/jenter/weenus
+
+## Problem
+
+One library of skills, reachable from six places:
+
+| Surface | Mechanism |
+|---|---|
+| Personal Claude app (web/desktop) | account-level: uploaded skill or connector |
+| Work Claude app (web/desktop) | account-level: uploaded skill or connector |
+| Personal iPhone | inherits from personal account, no per-device setup |
+| Work iPhone | inherits from work account, no per-device setup |
+| Personal Claude Code | `~/.claude/skills/` on that machine |
+| Work Claude Code | `~/.claude/skills/` on that machine |
+
+Six surfaces collapse to **two accounts plus two filesystems**. Skills and
+connectors are account-level, so mobile requires no separate work.
+
+## The core tradeoff
+
+Nothing today gives private storage + sync + automatic invocation
+simultaneously. Pick two:
+
+- **Uploaded skill** (zip → Customize > Skills): private, auto-invoked,
+  **no sync**. Two accounts = two uploads, permanently.
+- **Private GitHub repo + GitHub connector**: private, **synced** (reads
+  current HEAD at request time), but **not auto-invoked** — you name the
+  skill in your prompt.
+
+A saved login or bearer token is not an option. When Claude in the app
+fetches a URL, the request originates server-side and carries no session,
+cookie, or stored credential. There is nowhere to put the secret.
+
+## Chosen design
+
+Git is the source of truth. Two delivery paths off it.
+
+```
+weenus/
+  hotdog/SKILL.md          # test skill
+  <skill-name>/SKILL.md    # one directory per skill
+  install.sh               # symlink skills into ~/.claude/skills/
+  .github/workflows/       # package_skill.py validation + release zips
+  SKILLS-ARCHITECTURE.md   # this file
+```
+
+**Claude Code (both machines):** `install.sh` symlinks each skill directory
+into `~/.claude/skills/<name>`. Claude Code follows symlinks and reads
+SKILL.md from the target, so a `git pull` updates both machines instantly.
+
+**App surfaces (both accounts):** zip each skill directory, upload under
+Customize > Skills. Do this per account. Mobile follows automatically.
+
+**Optional reverse sync:** if uploads become the source of truth instead,
+run `CLAUDE_CODE_SYNC_SKILLS=1 claude -p "list your skills"` once per
+machine. Enabled account skills download to `~/.claude/skills/synced/` and
+persist across sessions. Re-run after any change on claude.ai.
+
+## Frontmatter constraint
+
+Author to the six fields accepted by claude.ai upload, the Skills API, and
+`package_skill.py`:
+
+`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
+
+Any other field (`argument-hint`, `context: fork`,
+`disable-model-invocation`) fails packaging with a hard error rather than
+being ignored. Staying inside these six means one file works in both places
+unchanged. Skills needing Claude Code-only features get a second variant,
+not a degraded shared one.
+
+## Open items
+
+1. **Work account may not permit personal skills.** On Enterprise, an Owner
+   must enable both *Code execution and file creation* and *Skills* under
+   Organization settings > Skills before members can upload their own. For
+   HIPAA-ready or otherwise regulated configurations these are off by
+   default. If Customize > Skills is greyed out on the work account, that's
+   the cause. Check this before building anything else — it decides whether
+   this plan covers four app surfaces or two.
+
+2. **Multi-file zip upload — unverified.** A skill is a directory of
+   SKILL.md plus supporting files, and that's documented for the Skills API.
+   Whether claude.ai's chat upload accepts supporting files the same way is
+   untested. If it does, one bundle whose SKILL.md routes to many reference
+   files collapses most upload churn. Test with a two-file zip on the
+   personal account before restructuring.
+
+3. **Client-derived content stays out of GitHub.** Egress permission is not
+   publishing permission, and a private repo is still infrastructure the
+   employer doesn't control. Generic engineering procedures publish freely;
+   pharma process detail, internal endpoints, and client specifics stay in
+   company git and reach work Claude Code only.
+
+## Rejected options
+
+- **Cloudflare Worker / custom MCP server** — on Team and Enterprise plans
+  only an organization Owner can add a custom connector, so this reaches at
+  most the personal account. Also loses progressive disclosure: every tool
+  description sits in context permanently instead of loading on demand.
+- **`/v1/skills` API** — workspace scope, not a claude.ai chat account.
+  Skills uploaded there are shared workspace-wide and run in a sandboxed
+  container with no network access. Right answer only for a custom
+  front-end over the Messages API.
+- **Private plugin marketplace** — distribution machinery for an audience
+  of one. Revisit only if Cowork or scheduled cloud sessions enter the mix.
+- **Public Pages URLs** — worked technically and passed the VPN, killed by
+  the privacy requirement.
+- **Unlisted URL with a token** — unguessable is not private. URLs leak
+  through server logs, proxy logs, and browser history.
+- **Local MCP via `claude_desktop_config.json`** — uses the local network,
+  desktop-only, never reaches either phone.
+
+## Synced-skill caveat
+
+For skills that arrive via `CLAUDE_CODE_SYNC_SKILLS`, local sessions do not
+execute `!` shell injection, do not attach `@` file references, and do not
+substitute `${CLAUDE_PROJECT_DIR}` — these reach the model as literal text.
+Claude Code also skips a synced skill whose name collides with a local or
+bundled skill, which is a usable override: keep a hand-maintained copy in
+`~/.claude/skills/<name>` to suppress the synced one.
