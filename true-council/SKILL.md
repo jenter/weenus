@@ -5,7 +5,7 @@ description: >
   answer independently, peer-review each other anonymously, then let this
   session act as chairman and synthesize a verdict. FREE mode (default,
   no API keys) fans out to separate Claude models via `claude -p`
-  subprocesses — Opus 5, Sonnet 5, Haiku 4.5, Fable 5.1. PAID mode fans
+  subprocesses — Opus 5, Sonnet 5, Haiku 4.5. PAID mode fans
   out to real cross-vendor models (OpenAI, Google Gemini, xAI, DeepSeek,
   Anthropic, or OpenRouter) when provider API keys are present; the skill
   detects available keys and ASKS before using paid.
@@ -72,15 +72,15 @@ identical in both modes.
 |------|----------|-------|
 | 1 Contrarian | `claude-cli` | `claude-opus-5` |
 | 2 First-Principles | `claude-cli` | `claude-sonnet-5` |
-| 3 Expansionist | `claude-cli` | `claude-fable-5-1` |
+| 3 Expansionist | `claude-cli` | `claude-opus-5` |
 | 4 Outsider | `claude-cli` | `claude-haiku-4-5` |
-| 5 Executor | `claude-cli` | `claude-opus-5` |
+| 5 Executor | `claude-cli` | `claude-sonnet-5` |
 
-4 distinct models for 5 seats, so Opus 5 runs seats 1 and 5 — fine, they
-are independent processes with fresh context. **Fable 5.1 needs
-pay-as-you-go usage credits**; if seat 3 returns a credits error (or any
-flag is rejected), rerun it with `claude-sonnet-5` and note the
-substitution in the transcript.
+3 distinct models for 5 seats — Opus 5 runs seats 1 and 3, Sonnet 5 runs
+seats 2 and 5. That's fine: they're independent processes with fresh
+context, so there's no cross-contamination. If a model flag is rejected
+by the CLI, rerun that seat with `claude-sonnet-5` (or `claude-opus-5`)
+and note the substitution in the transcript.
 
 ### PAID mode: seat → provider/model
 
@@ -142,8 +142,9 @@ $(cat "$D/brief.md")" > "$D/usr-$n.txt"
 ```
 
 If a seat call errors or returns empty, retry once; if it still fails,
-proceed with the seats you have and note the gap. In FREE mode apply the
-Fable → Sonnet fallback above.
+proceed with the seats you have and note the gap. In FREE mode, a
+rejected model flag falls back to `claude-sonnet-5` / `claude-opus-5`
+per the note above.
 
 ### 3. Anonymized peer review
 
