@@ -1,2 +1,5 @@
 *.zip
 .DS_Store
+
+# true-council writes decision logs here — personal, not shared skill code
+council-transcripts/
