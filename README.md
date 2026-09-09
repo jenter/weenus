@@ -17,6 +17,7 @@ audit a skill in this repo).
 |---|---|
 | [`hotdog`](hotdog/SKILL.md) | Test skill — confirms custom skill loading works on a given surface |
 | [`weenus`](weenus/SKILL.md) | Meta-skill — manages this repo's skills (create/update/audit) |
+| [`skill-idea`](skill-idea/SKILL.md) | Meta-skill — turns an idea into a new skill (asking clarifying questions first), brainstorms options, or redirects to a better-fitting mechanism |
 
 ## Quickstart
 
@@ -47,14 +48,21 @@ flow for edits, are in SKILLS-ARCHITECTURE.md's rollout runbook.
 
 ## Adding a new skill
 
+Easiest path: ask Claude Code to build one — the `skill-idea` skill will
+ask what it needs to know, then scaffold and write it for you (or tell
+you why a Skill isn't the right fit and what to do instead).
+
+To do it by hand:
+
 ```bash
 ./new-skill.sh <skill-name>
 ```
 
 Scaffolds `<skill-name>/SKILL.md` with correct frontmatter (only `name`,
 `description`, `license`, `compatibility`, `metadata`, `allowed-tools` are
-accepted by the uploader/API/packager — anything else fails packaging).
-Fill in the body, then follow the Quickstart above to roll it out.
+accepted by the uploader/API/packager — anything else fails packaging,
+enforced locally by `validate-skill.py` as a pre-commit hook). Fill in the
+body, then follow the Quickstart above to roll it out.
 
 ## Content boundary
 
