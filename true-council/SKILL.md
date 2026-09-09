@@ -162,7 +162,10 @@ review per distinct model rather than one per seat.
 
 ### 4. Chairman synthesis (this session — no subprocess)
 
-You are the chairman. From the five responses and the reviews, write:
+You are the chairman. From the five responses and the reviews, write the
+verdict under a heading that starts with the 👑 emoji — `## 👑 Chairman
+verdict` — so the reader can jump straight to it. Under it, these five
+labelled parts:
 
 - **Convergence** — what multiple seats independently agreed on (treat as
   higher-confidence signal).
@@ -175,17 +178,25 @@ You are the chairman. From the five responses and the reviews, write:
 
 ### 5. Present in chat
 
-Verdict as scannable markdown with those headings. Lead with the
-recommendation, not the process. Keep seat-by-seat detail out unless the
-user asks — offer the transcript instead. Say which mode and which
-models ran.
+Show the verdict as scannable markdown. Open with the literal line
+`👑 CHAIRMAN VERDICT` so the user can eye-scan straight to it, then the
+five headings. Lead with the recommendation, not the process. Keep
+seat-by-seat detail out unless the user asks — offer the transcript
+instead. Say which mode and which models ran.
 
 ### 6. Transcript
 
-For a weighty decision, save the full record — brief, five seat
-responses, reviews, verdict, mode, and models — to
+For a weighty decision, save the full record to
 `./council-transcripts/council-<YYYY-MM-DD-HHMM>.md` and give the user the
-path. Skip it for lighter calls.
+path (skip it for lighter calls). Order in the file:
+
+1. header — question, mode, seat→model list
+2. `## Brief`
+3. `## Seat 1`…`## Seat 5`
+4. `## Anonymized peer reviews`
+5. `## 👑 Chairman verdict` — **always last, always present**; same text
+   as the chat verdict. This is the one section a returning reader wants,
+   so the 👑 is how they find it without reading the rest.
 
 ## Notes
 
